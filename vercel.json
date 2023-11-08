@@ -8,11 +8,7 @@
     ],
     "routes":[
         {
-            "src":"/",
-            "dest":"/"
-        },
-        {
-            "src":"/api/v1/swap",
+            "src":"/(.*)",
             "dest":"/"
         }
     ]
