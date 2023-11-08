@@ -8,11 +8,12 @@
     ],
     "routes":[
         {
-            "src":"/(.*)",
+            "src":"/",
+            "dest":"/"
+        },
+        {
+            "src":"/api/v1/swap",
             "dest":"/"
         }
-    ],
-    "rewrites":[
-        {"source":"/(.*)","destination":"/"}
     ]
 }
