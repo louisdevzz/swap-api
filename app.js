@@ -1,23 +1,13 @@
 const express = require("express");
-const axios = require("axios");
-const redis = require('redis');
-const bodyParser = require('body-parser')
 const cors=require("cors");
 const nearAPI  = require('near-api-js');
 const { connect, KeyPair, keyStores, utils ,transactions} = nearAPI;
-const BN = require('bn.js')
-const math = require("mathjs")
-const BigNumber = require("bignumber.js");
-const Big = require('big.js');
+const BN = require('bn.js');
 require('dotenv').config();
 
 
 const app = express();
 const PORT = 5000;
-const client = redis.createClient({
-    host:"127.0.0.1",
-    port:6379
-});
 const corsOptions ={
     origin:'*', 
     credentials:true,            //access-control-allow-credentials:true
@@ -30,18 +20,11 @@ const REF_FI_CONTRACT_ID = 'ref-finance-101.testnet';
 const WRAP_NEAR_CONTRACT_ID = "wrap.testnet"
 const STORAGE_TO_REGISTER_WITH_MFT = "0.1";
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));
 app.use(cors(corsOptions)); // Use this after the variable declaration
 
-
-(async()=>{ 
-    await client.connect();
-    client.on('error', (err) => {
-        console.log(err.message);
-    })
-
-
+(async()=>{
     const keyStore = new keyStores.InMemoryKeyStore();
     // creates a keyPair from the private key provided in your .env file
     const keyPair = KeyPair.fromString(process.env.RELAYER_PRIVATE_KEY_NEAR_TESTNET);
@@ -173,8 +156,7 @@ app.use(cors(corsOptions)); // Use this after the variable declaration
         }
         
     }
-
-    app.post("/api/v1/users/",async(req,res)=>{
+    app.post('/api/v1/swap',(req,res)=>{
         try{
             const order = {
                 tokenIn: req.body.tokenIn,
@@ -183,25 +165,32 @@ app.use(cors(corsOptions)); // Use this after the variable declaration
                 transfer: req.body.transfer,
                 sender: req.body.sender,
             }
-            const resultSwap = swap({tokenIn:order['tokenIn'],tokenOut:order['tokenOut'],amountIn:order['amountIn']})
-            //['tokenIn']['id']
-            //console.log(result)
-            if(resultSwap){
+            // console.log(order)
+            // res.send(order)
+            if(order){
+              const resultSwap = swap({tokenIn:order['tokenIn'],tokenOut:order['tokenOut'],amountIn:order['amountIn']})
+              if(resultSwap){
                 const resultTransfer = transferWallet(order['sender'],minAmountOut)
                 console.log(resultTransfer)
                 res.send(resultTransfer)
+              }
             }
-            //const result = transferWallet(order['sender'],"38582709410714")
+            // res.send(order)
         }catch(err){
             console.log(err)
-            res.send(err.message)
+            res.send(err)
         }
     })
-    
+    app.get('/api/v1/swap',(req,res)=>{
+        res.send("swap get api")
+    })
+    app.get('/',(req,res)=>{
+        res.send("swap")
+    })
     
     app.listen(PORT,()=>{
         console.log(`server running on port ${PORT}`)
     })
     
-    module.exports = app    
+    module.exports = app
 })();
